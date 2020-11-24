@@ -29,12 +29,15 @@ public function rules()
    ];
 }
 ```    
-For multidimensional arrays like `
+
+For multidimensional arrays like 
+`
 [
     ['id'=>1, 'name'=>'John Doe'],
     ['id'=>2, 'name'=>'Jane Doe','sex'=>'female'],
      ...
-]` set each = true
+]`
+ set each = true
 
 ```php
 
@@ -162,3 +165,4 @@ public function rules()
 ```
 
 #### Note:
+Database related validators (exists, unique) not covered by tests yet and not supported 
