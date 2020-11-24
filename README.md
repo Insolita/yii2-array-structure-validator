@@ -1,4 +1,7 @@
 #### Yii2 validator for complex array structures
+
+![yii2-array-structure-validator](https://github.com/Insolita/yii2-array-structure-validator/workflows/yii2-array-structure-validator/badge.svg?branch=master)
+
 Validator for array attributes, unlike builtin "each" validator, that support only one rule, this validator can
  * validate multiple array attributes and even nested data structures
  * All keys that should be present in array must be described, for optional keys default value should be set
