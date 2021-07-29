@@ -1,5 +1,6 @@
 <?php
 use insolita\ArrayStructureValidator\ArrayStructureValidator;
+use PHPUnit\Framework\Assert;
 use tests\TestCase;
 use yii\base\DynamicModel;
 use yii\base\Model;
@@ -29,13 +30,13 @@ class ArrayStructureValidatorTest extends TestCase
             $model->addRule(...$rule);
         }
         $model->validate();
-        expect($model->hasErrors(), true);
-        expect($model->getFirstError('notArray'))->equals('notArray');
-        expect($model->getFirstError('emptyArray'))->null();
-        expect($model->getFirstError('emptyArray2'))->contains('Empty Array2 is too small');
-        expect($model->getFirstError('hash'))->contains('Hash is too small');
-        expect($model->getFirstError('hash2'))->null();
-        expect($model->getFirstError('indexed'))->contains('Indexed is too large');
+        self::assertTrue($model->hasErrors());
+        self::assertEquals($model->getFirstError('notArray'), 'notArray');
+        self::assertNull($model->getFirstError('emptyArray'));
+        self::assertNull($model->getFirstError('hash2'));
+        self::assertContains('Empty Array2 is too small', $model->getFirstError('emptyArray2'));
+        self::assertContains('Hash is too small', $model->getFirstError('hash'));
+        self::assertContains('Indexed is too large', $model->getFirstError('indexed'));
     }
 
     public function testArraySizeValidationWithEachRule():void
@@ -63,11 +64,11 @@ class ArrayStructureValidatorTest extends TestCase
         }
         $model->validate();
         //VarDumper::dump($model->getErrors());
-        expect($model->hasErrors())->true();
-        expect($model->hasErrors('a'))->false();
-        expect($model->hasErrors('b'))->true();
-        expect($model->getErrors('b'))->count(1);
-        expect($model->getErrors('c'))->count(2);
+        self::assertTrue($model->hasErrors());
+        self::assertFalse($model->hasErrors('a'));
+        self::assertTrue($model->hasErrors('b'));
+        self::assertCount(1, $model->getErrors('b'));
+        self::assertCount(2, $model->getErrors('c'));
     }
 
     public function testWithAssociativeStructure():void
@@ -132,14 +133,13 @@ class ArrayStructureValidatorTest extends TestCase
         }
         $model->validate();
         //VarDumper::dump($model->getErrors());
-        expect($model->hasErrors())->true();
-        expect($model->hasErrors('valid'))->false();
-        expect($model->hasErrors('invalid1'))->true();
-        expect($model->hasErrors('invalid2'))->true();
-        expect($model->hasErrors('invalid3'))->true();
-        expect($model->getErrors('invalid1'))->count(1);
-        expect($model->getErrors('invalid2'))->count(count($data['invalid2']));
-        expect($model->getErrors('invalid3'))->contains('Invalid3 contains unexpected items foo,bar');
+        self::assertTrue($model->hasErrors());
+        self::assertFalse($model->hasErrors('valid'));
+        self::assertTrue($model->hasErrors('invalid1'));
+        self::assertTrue($model->hasErrors('invalid2'));
+        self::assertTrue($model->hasErrors('invalid3'));
+        self::assertCount(1, $model->getErrors('invalid1'));
+        self::assertContains('Invalid3 contains unexpected items foo,bar', $model->getErrors('invalid3'));
     }
 
     public function testWithIndexedStructureEachOption():void
@@ -175,8 +175,8 @@ class ArrayStructureValidatorTest extends TestCase
         }
         $model->validate();
         //VarDumper::dump($model->getErrors());
-        expect($model->hasErrors('valid'))->false();
-        expect($model->hasErrors('invalid'))->true();
+        self::assertFalse($model->hasErrors('valid'));
+        self::assertTrue($model->hasErrors('invalid'));
     }
 
     public function testWithIndexedStructureAndEachValidator():void
@@ -222,8 +222,8 @@ class ArrayStructureValidatorTest extends TestCase
         }
         $model->validate();
         //VarDumper::dump($model->getErrors());
-        expect($model->hasErrors('valid'))->false();
-        expect($model->hasErrors('invalid'))->true();
+        self::assertFalse($model->hasErrors('valid'));
+        self::assertTrue($model->hasErrors('invalid'));
     }
 
     public function testMutableImmutable():void
@@ -256,11 +256,11 @@ class ArrayStructureValidatorTest extends TestCase
             $model->addRule(...$rule);
         }
 
-        expect($model->validate())->true();
-        expect($model->immutable)->equals($data['immutable']);
-        expect($model->mutable)->equals(['x' => 11, 'y' => 'foo', 'z' => 100500]);
-        expect($model->mutableIndexed[0])->equals(['x' => 11, 'y' => 'foo', 'z' => 100500]);
-        expect($model->mutableIndexed[1])->equals(['x' => 12, 'y' => 'bar', 'z' => 100500]);
+        self::assertTrue($model->validate());
+        self::assertEquals($model->immutable, $data['immutable']);
+        self::assertEquals($model->mutable, ['x' => 11, 'y' => 'foo', 'z' => 100500]);
+        self::assertEquals($model->mutableIndexed[0], ['x' => 11, 'y' => 'foo', 'z' => 100500]);
+        self::assertEquals($model->mutableIndexed[1], ['x' => 12, 'y' => 'bar', 'z' => 100500]);
     }
 
     public function testWithClosureRules():void
@@ -274,18 +274,18 @@ class ArrayStructureValidatorTest extends TestCase
         ];
         $closure = function($attribute, $model, $index, $baseModel, $baseAttribute) {
             if ($baseAttribute === 'hash') {
-                expect($index)->null();
+                self::assertNull($index);
             } else {
-                expect(in_array($index, [0, 1], true))->true();
+                self::assertTrue(in_array($index, [0, 1], true));
             }
-            expect($model)->isInstanceOf(DynamicModel::class);
-            expect($model->hasAttribute('a'))->true();
-            expect($model->hasAttribute('b'))->true();
-            expect($model->hasAttribute('hash'))->false();
-            expect($baseModel)->isInstanceOf(DynamicModel::class);
-            expect($baseModel->hasAttribute('a'))->false();
-            expect($baseModel->hasAttribute('hash'))->true();
-            expect($baseModel->hasAttribute('indexed'))->true();
+            self::assertInstanceOf(DynamicModel::class, $model);
+            self::assertInstanceOf(DynamicModel::class, $baseModel);
+            self::assertTrue($model->hasAttribute('a'));
+            self::assertTrue($model->hasAttribute('b'));
+            self::assertFalse($model->hasAttribute('hash'));
+            self::assertFalse($baseModel->hasAttribute('a'));
+            self::assertTrue($baseModel->hasAttribute('hash'));
+            self::assertTrue($baseModel->hasAttribute('indexed'));
             if ($model->b !== 'foo') {
                 $model->addError($attribute, $attribute . ' Fail condition from closure');
             }
@@ -309,11 +309,11 @@ class ArrayStructureValidatorTest extends TestCase
         foreach ($rules as $rule) {
             $model->addRule(...$rule);
         }
-        expect($model->validate())->false();
         //VarDumper::dump($model->errors);
-        expect($model->getErrors('indexed'))->contains('[1]a Fail condition from closure');
-        expect($model->getErrors('indexed'))->contains('[1]b Fail condition from closure');
-        expect($model->hasErrors('hash'))->false();
+        self::assertFalse($model->validate());
+        self::assertFalse($model->hasErrors('hash'));
+        self::assertContains('[1]a Fail condition from closure', $model->getErrors('indexed'));
+        self::assertContains('[1]b Fail condition from closure', $model->getErrors('indexed'));
     }
 
     public function testNestedArray():void
@@ -382,20 +382,20 @@ class ArrayStructureValidatorTest extends TestCase
         foreach ($rules as $rule) {
             $model->addRule(...$rule);
         }
-        expect($model->validate())->true();
+        self::assertTrue($model->validate());
         //VarDumper::dump($model->getAttributes());
         foreach ($model->a['foo'] as $item) {
-            expect($item)->hasKey('z');
-            expect($item['z'])->equals(100500);
+            self::assertArrayHasKey('z', $item);
+            self::assertEquals(100500, $item['z']);
         }
         foreach ($model->a['bar'] as $item) {
-            expect($item)->hasKey('a');
-            expect($item)->hasKey('b');
-            expect($item)->hasKey('c');
-            expect($item)->hasKey('x');
+            self::assertArrayHasKey('a', $item);
+            self::assertArrayHasKey('b', $item);
+            self::assertArrayHasKey('c', $item);
+            self::assertArrayHasKey('x', $item);
         }
-        expect($model->b['bar']['a'])->equals(null);
-        expect($model->b['bar']['b'])->equals('foo');
+        self::assertNull($model->b['bar']['a']);
+        self::assertEquals($model->b['bar']['b'], 'foo');
     }
 
     public function testErrorMessages():void
@@ -576,21 +576,21 @@ class ArrayStructureValidatorTest extends TestCase
         foreach ($rules as $rule) {
             $model->addRule(...$rule);
         }
-        expect($model->validate())->false();
-        expect($model->getErrors('indexedFullErrors'))->contains('[foo][0]Y cannot be blank.');
-        expect($model->getErrors('indexedFullErrors'))->contains('[foo][1]Y cannot be blank.');
-        expect($model->getErrors('indexedFullErrors'))->contains('[foo][0]X must be no greater than 10.');
-        expect($model->getErrors('indexedFullErrors'))->contains('[bar][0]A must be no less than 2.');
-        expect($model->getErrors('indexedFullErrors'))->contains('[bar][1]B is invalid.');
+        self::assertFalse($model->validate());
+        self::assertContains('[foo][0]Y cannot be blank.', $model->getErrors('indexedFullErrors'));
+        self::assertContains('[foo][1]Y cannot be blank.', $model->getErrors('indexedFullErrors'));
+        self::assertContains('[foo][0]X must be no greater than 10.', $model->getErrors('indexedFullErrors'));
+        self::assertContains('[bar][0]A must be no less than 2.', $model->getErrors('indexedFullErrors'));
+        self::assertContains('[bar][1]B is invalid.', $model->getErrors('indexedFullErrors'));
 
-        expect($model->getErrors('indexedStopOnFirst'))->contains('[foo][0]Y cannot be blank.');
-        expect($model->getErrors('indexedStopOnFirst'))->notContains('[foo][1]Y cannot be blank.');
-        expect($model->getErrors('indexedStopOnFirst'))->contains('[foo][0]X must be no greater than 10.');
-        expect($model->getErrors('indexedStopOnFirst'))->contains('[bar][0]A must be no less than 2.');
-        expect($model->getErrors('indexedStopOnFirst'))->notContains('[bar][1]B is invalid.');
+        self::assertContains('[foo][0]Y cannot be blank.', $model->getErrors('indexedStopOnFirst'));
+        self::assertNotContains('[foo][1]Y cannot be blank.', $model->getErrors('indexedStopOnFirst'));
+        self::assertContains('[foo][0]X must be no greater than 10.', $model->getErrors('indexedStopOnFirst'));
+        self::assertContains('[bar][0]A must be no less than 2.', $model->getErrors('indexedStopOnFirst'));
+        self::assertNotContains('[bar][1]B is invalid.', $model->getErrors('indexedStopOnFirst'));
 
-        expect($model->getErrors('hashFullErrors'))->contains('[bar]A custom message for required');
-        expect($model->getErrors('hashFullErrors'))->contains('[bar]Id is not a valid email address.');
+        self::assertContains('[bar]A custom message for required', $model->getErrors('hashFullErrors'));
+        self::assertContains('[bar]Id is not a valid email address.', $model->getErrors('hashFullErrors'));
 
         $compactErrors1 = implode("\n",
             ['[bar]A custom message for required', '[bar]Id is not a valid email address.']
@@ -598,8 +598,8 @@ class ArrayStructureValidatorTest extends TestCase
         $compactErrors2 = implode("\n",
             ['[bar]Id is not a valid email address.', '[bar]A custom message for required']
         );
-        $errors = $model->getErrors('hashCompactErrors');
-        expect($errors === $compactErrors1 || $errors === $compactErrors2);
+        $errors = implode("\n",$model->getErrors('hashCompactErrors'));
+        self::assertTrue($errors === $compactErrors1 || $errors === $compactErrors2);
     }
 
     public function testUniqueValidatorNotSupported()
@@ -629,9 +629,9 @@ class ArrayStructureValidatorTest extends TestCase
         ]);
         $error = '';
         $isValid = $validator->validate([['x' => 100], ['x' => 5], ['x' => 3, 'y' => 4]], $error);
-        expect($isValid)->false();
-        expect($error)->contains('[0]Y cannot be blank.');
-        expect($error)->contains('[0]X must be no greater than 10.');
+        self::assertFalse($isValid);
+        self::assertContains('[0]Y cannot be blank.', $error);
+        self::assertContains('[0]X must be no greater than 10.', $error);
     }
 
     public function testScenarioConditionsShouldBeApplied():void
@@ -686,25 +686,25 @@ class ArrayStructureValidatorTest extends TestCase
         $model->scenario = 'default';
         $model->value = ['x' => '1', 'y' => null, 'foo' => '123'];
         $model->validate();
-        expect($model->value['y'])->null();
-        expect($model->value['z'])->equals('bar');
-        expect($model->hasErrors())->false();
+        self::assertNull($model->value['y']);
+        self::assertFalse($model->hasErrors());
+        self::assertEquals('bar', $model->value['z']);
 
         $model->value = ['x' => '1', 'y' => null, 'foo' => '1234'];
         $model->scenario = 'test1';
         $model->validate();
         //VarDumper::dump([$model->scenario, $model->getErrors()]);
-        expect($model->value['y'])->equals(1);
-        expect($model->value['z'])->equals('foo');
-        expect($model->getErrors('value'))->contains('X must be no less than 5.');
-        expect($model->getErrors('value'))->contains('Foo should contain at most 3 characters.');
+        self::assertEquals(1, $model->value['y']);
+        self::assertEquals('foo', $model->value['z']);
+        self::assertContains('X must be no less than 5.', $model->getErrors('value'));
+        self::assertContains('Foo should contain at most 3 characters.', $model->getErrors('value'));
 
         $model->scenario = 'test2';
         $model->value = ['x' => '1', 'y' => null, 'foo' => '123'];
         $model->validate();
-        expect($model->value['y'])->equals(2);
-        expect($model->value['z'])->equals('foo');
-        expect($model->hasErrors())->false();
+        self::assertEquals(2, $model->value['y']);
+        self::assertEquals('foo', $model->value['z']);
+        self::assertFalse($model->hasErrors());
     }
 
     public function testWhenConditionsShouldBeApplied()
@@ -725,6 +725,14 @@ class ArrayStructureValidatorTest extends TestCase
 
             public function rules()
             {
+                $checker = function($model, $attribute, $index, $baseModel, $baseAttribute) {
+                    Assert::assertInstanceOf(DynamicModel::class, $model);
+                    Assert::assertInstanceOf(Model::class, $baseModel);
+                    Assert::assertEquals('z', $attribute);
+                    Assert::assertEquals('value', $baseAttribute);
+                    Assert::assertNull($index);
+                    return $model->x > 10;
+                };
                 return [
                     [
                         'value',
@@ -735,17 +743,7 @@ class ArrayStructureValidatorTest extends TestCase
                                 [
                                     'default',
                                     'value' => 'foo',
-                                    'when' => function(
-                                        $model, $attribute, $index, $baseModel,
-                                        $baseAttribute
-                                    ) {
-                                        expect($model)->isInstanceOf(DynamicModel::class);
-                                        expect($attribute)->equals('z');
-                                        expect($baseModel)->isInstanceOf(Model::class);
-                                        expect($baseAttribute)->equals('value');
-                                        expect($index)->equals(null);
-                                        return $model->x > 10;
-                                    },
+                                    'when' => $checker,
                                 ],
                                 [
                                     'default',
@@ -763,16 +761,16 @@ class ArrayStructureValidatorTest extends TestCase
         $model->dummy = 'bar';
         $model->value = ['x' => 1];
         $model->validate();
-        expect($model->value['z'])->equals('bar');
+        self::assertEquals('bar', $model->value['z']);
 
         $model->dummy = 'bar';
         $model->value = ['x' => 15];
         $model->validate();
-        expect($model->value['z'])->equals('foo');
+        self::assertEquals('foo', $model->value['z']);
 
         $model->dummy = '';
         $model->value = ['x' => 5];
         $model->validate();
-        expect($model->value['z'])->null();
+        self::assertNull($model->value['z']);
     }
 }
