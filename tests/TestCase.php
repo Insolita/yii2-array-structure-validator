@@ -9,7 +9,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
 {
     protected $backupGlobals = false;
 
-    protected function setUp()
+    protected function setUp():void
     {
         parent::setUp();
         $this->mockApplication();
