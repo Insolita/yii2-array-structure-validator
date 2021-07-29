@@ -51,5 +51,10 @@ jobs:
     - name: Install deps
       run: composer install --prefer-dist --no-progress --no-suggest --optimize-autoloader
 
-    - name: Unit tests
+    - name: Unit tests 8.x
       run: phpunit
+      if: matrix.php-versions == '8.0' || matrix.php-versions == '8.1'
+
+    - name: Unit tests 7.x
+      run: php vendor/bin/phpunit
+      if: matrix.php-versions != '8.0' && matrix.php-versions != '8.1'
