@@ -7,14 +7,12 @@
         "validator"
     ],
     "require": {
-        "php":            ">=7.1.0",
+        "php":            "^7.1|^8.0",
         "yiisoft/yii2":   "~2.0.15"
-
     },
     "require-dev": {
         "phpunit/phpunit": "^7.0|^8.0|^9.0",
-        "cebe/indent": "*",
-        "friendsofphp/php-cs-fixer": "~2.16|^3.0"
+        "cebe/indent": "*"
     },
     "autoload": {
         "psr-4": {
