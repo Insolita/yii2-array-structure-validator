@@ -17,6 +17,7 @@ jobs:
       fail-fast: true
       matrix:
         php-versions: [ '7.1', '7.2', '7.3', '7.4', '8.0', '8.1']
+        phpunit-versions: ['latest']
 
     steps:
     - uses: actions/checkout@v2
@@ -26,7 +27,8 @@ jobs:
       with:
         php-version: ${{ matrix.php-versions }}
         extensions: mbstring, intl, gd, imagick, zip, dom, pgsql
-
+      env:
+          update: ${{ matrix.php-version == '8.0' || matrix.php-version == '8.1' }}
     - name: Get composer cache directory
       id: composercache
       run: echo "::set-output name=dir::$(composer config cache-files-dir)"
