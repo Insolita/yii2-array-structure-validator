@@ -7,6 +7,8 @@ use yii\web\Application;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
+    protected $backupGlobals = false;
+
     protected function setUp()
     {
         parent::setUp();
