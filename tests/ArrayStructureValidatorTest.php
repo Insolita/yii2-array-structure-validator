@@ -316,6 +316,44 @@ class ArrayStructureValidatorTest extends TestCase
         self::assertContains('[1]b Fail condition from closure', $model->getErrors('indexed'));
     }
 
+    public function testWithCallableRules():void
+    {
+        $data = [
+            'hash' => ['a' => 1, 'b' => 'foo'],
+            'indexed' => [
+                ['a' => 1, 'b' => 'foo'],
+                ['a' => 12, 'b' => 'bar'],
+            ],
+        ];
+
+        $structure = [
+            'a' => [
+                ['integer'],
+                [Closure::fromCallable([$this, 'callableValidator'])],
+            ],
+            'b' => [
+                [Closure::fromCallable([$this, 'callableValidator'])]
+            ],
+        ];
+        $rules = [
+            ['hash', ArrayStructureValidator::class, ['rules' => $structure]],
+            [
+                'indexed',
+                ArrayStructureValidator::class,
+                ['rules' => $structure, 'compactErrors' => false, 'each' => true],
+            ],
+        ];
+        $model = new DynamicModel($data);
+        foreach ($rules as $rule) {
+            $model->addRule(...$rule);
+        }
+        //VarDumper::dump($model->errors);
+        self::assertFalse($model->validate());
+        self::assertFalse($model->hasErrors('hash'));
+        self::assertContains('[1]a Fail condition from callable', $model->getErrors('indexed'));
+        self::assertContains('[1]b Fail condition from callable', $model->getErrors('indexed'));
+    }
+
     public function testNestedArray():void
     {
         $data = [
@@ -772,5 +810,24 @@ class ArrayStructureValidatorTest extends TestCase
         $model->value = ['x' => 5];
         $model->validate();
         self::assertNull($model->value['z']);
+    }
+
+    public function callableValidator($attribute, $model, $index, $baseModel, $baseAttribute) {
+        if ($baseAttribute === 'hash') {
+            self::assertNull($index);
+        } else {
+            self::assertTrue(in_array($index, [0, 1], true));
+        }
+        self::assertInstanceOf(DynamicModel::class, $model);
+        self::assertInstanceOf(DynamicModel::class, $baseModel);
+        self::assertTrue($model->hasAttribute('a'));
+        self::assertTrue($model->hasAttribute('b'));
+        self::assertFalse($model->hasAttribute('hash'));
+        self::assertFalse($baseModel->hasAttribute('a'));
+        self::assertTrue($baseModel->hasAttribute('hash'));
+        self::assertTrue($baseModel->hasAttribute('indexed'));
+        if ($model->b !== 'foo') {
+            $model->addError($attribute, $attribute . ' Fail condition from callable');
+        }
     }
 }
