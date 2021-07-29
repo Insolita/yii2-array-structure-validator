@@ -20,9 +20,9 @@ jobs:
         phpunit-versions: ['latest']
         include:
              - php-versions: '8.0'
-               phpunit-versions: '9.0'
+               phpunit-versions: '9.5.7'
              - php-versions: '8.1'
-               phpunit-versions: '9.0'
+               phpunit-versions: '9.5.7'
 
     steps:
     - uses: actions/checkout@v2
