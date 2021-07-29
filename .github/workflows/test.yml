@@ -44,14 +44,14 @@ jobs:
       uses: actions/cache@v2
       with:
           path: ${{ steps.composercache.outputs.dir }}
-          key: ${{ runner.os }}-php-${{ matrix.php-versions }}-${{ hashFiles('**/composer.json') }}
+          key: ${{ runner.os }}-php-${{ matrix.php-versions }}-${{ matrix.phpunit-versions }}-${{ hashFiles('**/composer.json') }}
           restore-keys: |
-            ${{ runner.os }}-php-${{ matrix.php-versions }}
+            ${{ runner.os }}-php-${{ matrix.php-versions }}-${{ matrix.phpunit-versions }}
 
     - name: Install deps
       run: composer install --prefer-dist --no-progress --no-suggest --optimize-autoloader
 
-    - name: Unit tests 8.x
+    - name: Unit tests 8.x with phpunit:${{ matrix.phpunit-versions }}
       run: phpunit
       if: matrix.php-versions == '8.0' || matrix.php-versions == '8.1'
 
